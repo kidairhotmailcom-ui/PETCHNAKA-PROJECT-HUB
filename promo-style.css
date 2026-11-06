@@ -1,0 +1,54 @@
+/* AUTO SHOP PRO promotional section */
+.shop-video-section {
+  padding: 72px 20px;
+  background: #f5f8fc;
+}
+.shop-video-inner {
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  text-align: center;
+}
+.shop-eyebrow {
+  margin: 0 0 10px;
+  color: #0878a8;
+  font-size: .85rem;
+  font-weight: 800;
+  letter-spacing: .16em;
+}
+.shop-video-inner h2 {
+  margin: 0 0 14px;
+  color: #10213d;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  line-height: 1.2;
+}
+.shop-lead {
+  max-width: 760px;
+  margin: 0 auto 30px;
+  color: #526176;
+  line-height: 1.8;
+}
+.shop-banner {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 18px;
+  box-shadow: 0 16px 40px rgba(15, 35, 65, .14);
+}
+.shop-video-heading { margin: 42px 0 18px; }
+.shop-video-heading h3 { margin: 0 0 8px; color: #10213d; font-size: 1.5rem; }
+.shop-video-heading p { margin: 0; color: #64748b; }
+.shop-demo-video {
+  display: block;
+  width: 100%;
+  max-height: 620px;
+  aspect-ratio: 16 / 9;
+  background: #071426;
+  border-radius: 18px;
+  box-shadow: 0 12px 32px rgba(15, 35, 65, .12);
+}
+.shop-video-note { margin: 14px 0 0; color: #64748b; font-size: .9rem; line-height: 1.7; }
+.shop-video-note code { padding: 2px 6px; border-radius: 5px; background: #e2e8f0; color: #1e293b; }
+@media (max-width: 600px) {
+  .shop-video-section { padding: 48px 14px; }
+  .shop-banner, .shop-demo-video { border-radius: 12px; }
+}
