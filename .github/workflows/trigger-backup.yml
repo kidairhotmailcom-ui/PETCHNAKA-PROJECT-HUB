@@ -1,0 +1,40 @@
+name: Trigger PETCHNAKA Backup
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  trigger-backup:
+    name: Send backup request
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger BACKUP repository
+        env:
+          BACKUP_TOKEN: ${{ secrets.BACKUP_REPO_TOKEN }}
+          SOURCE_SHA: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -z "$BACKUP_TOKEN" ]; then
+            echo "ERROR: BACKUP_REPO_TOKEN is missing"
+            exit 1
+          fi
+
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --url https://api.github.com/repos/kidairhotmailcom-ui/PETCHNAKA-PROJECT-BACKUP/dispatches \
+            --header "Accept: application/vnd.github+json" \
+            --header "Authorization: Bearer $BACKUP_TOKEN" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            --data "{\"event_type\":\"hub-updated\",\"client_payload\":{\"source_sha\":\"$SOURCE_SHA\"}}"
+
+          echo "Backup request sent successfully"
