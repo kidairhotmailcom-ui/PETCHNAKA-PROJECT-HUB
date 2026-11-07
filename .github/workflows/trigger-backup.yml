@@ -1,4 +1,3 @@
-
 name: Trigger PETCHNAKA Backup
 
 on:
@@ -31,33 +30,6 @@ jobs:
 
           echo "Backup token is present"
 
-      - name: Verify GitHub identity
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.BACKUP_REPO_TOKEN }}
-        run: |
-          set -euo pipefail
-
-          HTTP_CODE=$(curl \
-            --silent \
-            --show-error \
-            --output user-check.json \
-            --write-out "%{http_code}" \
-            --header "Accept: application/vnd.github+json" \
-            --header "Authorization: Bearer $GH_TOKEN" \
-            --header "X-GitHub-Api-Version: 2022-11-28" \
-            https://api.github.com/user)
-
-          echo "GitHub identity HTTP: $HTTP_CODE"
-
-          if [ "$HTTP_CODE" != "200" ]; then
-            echo "ERROR: GitHub authentication failed"
-            cat user-check.json
-            exit 1
-          fi
-
-          python -c "import json; d=json.load(open('user-check.json')); print('Authenticated account:', d.get('login', 'UNKNOWN'))"
-
       - name: Check BACKUP repository access
         shell: bash
         env:
@@ -77,16 +49,14 @@ jobs:
 
           echo "Repository access HTTP: $HTTP_CODE"
 
-          python -c "import json; d=json.load(open('repo-check.json')); print('Repository:', d.get('full_name', d.get('message', 'UNKNOWN')))"
-
           if [ "$HTTP_CODE" != "200" ]; then
-            echo "ERROR: Cannot access BACKUP repository"
+            cat repo-check.json
             exit 1
           fi
 
           echo "BACKUP repository access PASSED"
 
-      - name: Send backup dispatch
+      - name: Send HUB backup dispatch
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.BACKUP_REPO_TOKEN }}
@@ -109,10 +79,9 @@ jobs:
           echo "Dispatch HTTP: $HTTP_CODE"
 
           if [ "$HTTP_CODE" != "204" ]; then
-            echo "ERROR: Backup dispatch failed"
             cat dispatch-result.json
             exit 1
           fi
 
-          echo "Backup request sent successfully"
+          echo "HUB backup request sent successfully"
           echo "Source commit: $SOURCE_SHA"
