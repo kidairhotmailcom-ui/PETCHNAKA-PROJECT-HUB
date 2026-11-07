@@ -1,0 +1,91 @@
+name: Project Backup
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 18 * * *" # 01:30 Thailand time
+  push:
+    branches: ["**"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: project-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    if: github.ref_name == github.event.repository.default_branch || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout default branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+
+      - name: Prepare backup branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin backup || true
+          if git show-ref --verify --quiet refs/remotes/origin/backup; then
+            git worktree add ../backup-worktree -B backup origin/backup
+          else
+            git worktree add --detach ../backup-worktree HEAD
+            git -C ../backup-worktree switch --orphan backup
+            git -C ../backup-worktree rm -rf . >/dev/null 2>&1 || true
+          fi
+
+      - name: Copy project files and create checksum manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC="$GITHUB_WORKSPACE"
+          DST="$GITHUB_WORKSPACE/../backup-worktree"
+
+          rsync -a --delete \
+            --exclude='.git/' \
+            --exclude='.env' \
+            --exclude='.env.*' \
+            --exclude='!.env.example' \
+            --exclude='node_modules/' \
+            --exclude='.DS_Store' \
+            --exclude='backup/MANIFEST.sha256' \
+            "$SRC/" "$DST/"
+
+          cd "$DST"
+          mkdir -p backup/reports
+          find . -type f \
+            ! -path './.git/*' \
+            ! -path './backup/MANIFEST.sha256' \
+            -print0 | sort -z | xargs -0 sha256sum > backup/MANIFEST.sha256
+
+          {
+            echo "# Backup report"
+            echo
+            echo "- Repository: $GITHUB_REPOSITORY"
+            echo "- Source branch: ${{ github.event.repository.default_branch }}"
+            echo "- Source commit: $GITHUB_SHA"
+            echo "- Backup time (UTC): $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            echo "- Workflow run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo "- Files hashed: $(wc -l < backup/MANIFEST.sha256)"
+          } > backup/reports/LATEST.md
+
+          sha256sum -c backup/MANIFEST.sha256
+
+      - name: Commit and push backup
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE/../backup-worktree"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No backup changes detected."
+          else
+            git commit -m "Automated backup from ${GITHUB_SHA}"
+            git push origin backup
+          fi
