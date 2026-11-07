@@ -1,0 +1,63 @@
+name: Restore Backup To Test Branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      backup_ref:
+        description: "Backup branch or commit SHA to restore from"
+        required: true
+        default: "backup"
+
+permissions:
+  contents: write
+
+jobs:
+  restore-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout selected backup
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.backup_ref }}
+          path: backup-source
+          fetch-depth: 0
+
+      - name: Verify backup before restore
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd backup-source
+          test -s backup/MANIFEST.sha256
+          sha256sum -c backup/MANIFEST.sha256
+
+      - name: Create isolated restore-test branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          path: restore-target
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Copy backup into restore-test branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd restore-target
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          BRANCH="restore-test-${GITHUB_RUN_ID}"
+          git switch -c "$BRANCH"
+
+          rsync -a --delete \
+            --exclude='.git/' \
+            --exclude='.env' \
+            --exclude='.env.*' \
+            --exclude='!.env.example' \
+            --exclude='node_modules/' \
+            ../backup-source/ ./
+
+          git add -A
+          git commit -m "Restore test from ${{ inputs.backup_ref }}"
+          git push origin "$BRANCH"
+          echo "Restore test branch created: $BRANCH"
+          echo "This workflow does not modify the default production branch."
