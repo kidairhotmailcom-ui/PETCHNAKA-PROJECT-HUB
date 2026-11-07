@@ -1,3 +1,4 @@
+
 name: Trigger PETCHNAKA Backup
 
 on:
@@ -16,10 +17,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Trigger BACKUP repository
+      - name: Check backup token
         env:
           BACKUP_TOKEN: ${{ secrets.BACKUP_REPO_TOKEN }}
-          SOURCE_SHA: ${{ github.sha }}
         shell: bash
         run: |
           set -euo pipefail
@@ -29,9 +29,46 @@ jobs:
             exit 1
           fi
 
+          echo "Backup token is present"
+
+      - name: Check access to BACKUP repository
+        env:
+          BACKUP_TOKEN: ${{ secrets.BACKUP_REPO_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          HTTP_CODE=$(curl \
+            --silent \
+            --show-error \
+            --output repo-check.json \
+            --write-out "%{http_code}" \
+            --header "Accept: application/vnd.github+json" \
+            --header "Authorization: Bearer $BACKUP_TOKEN" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/kidairhotmailcom-ui/PETCHNAKA-PROJECT-BACKUP)
+
+          echo "Repository access HTTP: $HTTP_CODE"
+          cat repo-check.json
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "ERROR: Cannot access BACKUP repository"
+            exit 1
+          fi
+
+          echo "BACKUP repository access PASSED"
+
+      - name: Trigger BACKUP repository
+        env:
+          BACKUP_TOKEN: ${{ secrets.BACKUP_REPO_TOKEN }}
+          SOURCE_SHA: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
           curl --fail-with-body --silent --show-error \
             --request POST \
-            --url https://api.github.com/repos/kidairhotmailcom-ui/PETCHNAKA-PROJECT-BACKUP/dispatches \
+            --url https://api.github.com/repos/kidairhotmailcom-ui/PETCHNA-PROJECT-BACKUP/dispatches \
             --header "Accept: application/vnd.github+json" \
             --header "Authorization: Bearer $BACKUP_TOKEN" \
             --header "X-GitHub-Api-Version: 2022-11-28" \
