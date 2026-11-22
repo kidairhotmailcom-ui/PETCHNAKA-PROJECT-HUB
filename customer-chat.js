@@ -76,7 +76,8 @@
     launcher.textContent = 'คุยกับ AI บริษัท';
   };
   launcher.addEventListener('click', () => panel.classList.contains('is-open') ? closePanel() : openPanel());
-  close.addEventListener('click', closePanel);\n  document.getElementById('openCompanyChat')?.addEventListener('click', openPanel);
+  close.addEventListener('click', closePanel);
+  document.getElementById('openCompanyChat')?.addEventListener('click', openPanel);
 
   form.addEventListener('submit', async event => {
     event.preventDefault();
