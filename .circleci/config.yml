@@ -1,0 +1,16 @@
+version: 2.1
+
+jobs:
+  hub-quality-check:
+    docker:
+      - image: cimg/python:3.12
+    steps:
+      - checkout
+      - run:
+          name: Validate PROJECT HUB HTML
+          command: python scripts/check_hub.py
+
+workflows:
+  project-hub-validation:
+    jobs:
+      - hub-quality-check
