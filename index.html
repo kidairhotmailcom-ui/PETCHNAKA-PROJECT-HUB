@@ -253,6 +253,26 @@
   ];
   const STATUS_LABELS={running:'กำลังทำงาน',queued:'รอคิว',completed:'งานล่าสุดสำเร็จ',failed:'พบข้อผิดพลาด',no_data:'ยังไม่มีข้อมูลงาน',unknown:'สถานะไม่ทราบ'};
   const byKey=Object.fromEntries(DEPARTMENTS.map(d=>[d.key,d]));
+  // Map HUB presentation keys to the canonical department IDs returned by JARVIS CORE.
+  const API_DEPARTMENT_KEYS=Object.freeze({
+    secretary_admin:'admin',
+    finance_accounting:'finance',
+    marketing:'marketing',
+    sales_bizdev:'sales',
+    customer_support:'support',
+    operations_pm:'operations',
+    tech_engineering:'technology',
+    research_development:'research_development',
+    procurement_assets:'procurement',
+    internal_audit_quality:'audit',
+    legal_contracts:'legal',
+    ai_resources_hr:'ai_resources',
+    security_cyber:'security',
+    risk_continuity:'risk',
+    data_information:'data_information',
+    public_relations:'communications',
+    maintenance_recovery:'maintenance_recovery'
+  });
   let currentFilter='all';
   let departmentStatuses=DEPARTMENTS.map(d=>({...d,status:'no_data',last_activity_at:null}));
   const el=id=>document.getElementById(id);
@@ -291,7 +311,7 @@
       const data=await r.json();
       if(!Array.isArray(data.departments)||data.departments.length!==17)throw new Error('invalid_payload');
       const statusMap=Object.fromEntries(data.departments.map(x=>[x.key,x]));
-      departmentStatuses=DEPARTMENTS.map(d=>({...d,status:statusMap[d.key]?.status||'no_data',last_activity_at:statusMap[d.key]?.last_activity_at||null}));
+      departmentStatuses=DEPARTMENTS.map(d=>({...d,status:statusMap[API_DEPARTMENT_KEYS[d.key]||d.key]?.status||'no_data',last_activity_at:statusMap[API_DEPARTMENT_KEYS[d.key]||d.key]?.last_activity_at||null}));
       const c=data.counts||{};
       ['running','queued','completed','failed','no_data'].forEach(k=>el('dept-'+k).textContent=String(c[k]??0));
       el('dept-total').textContent=String(c.total??17);
