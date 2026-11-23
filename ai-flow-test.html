@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#070b18">
+<title>JARVIS AI FLOW TEST | PETCHNAKA PROJECT HUB</title>
+<style>
+:root{color-scheme:dark;--bg:#070b18;--panel:#101a2e;--line:#2a3d59;--text:#edf5ff;--muted:#9aacc6;--cyan:#61e7e0;--green:#55dfad;--amber:#ffc978;--red:#ff7185;--blue:#78a9ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 15% 0,#173b5b 0,transparent 38%),var(--bg);color:var(--text);font:15px/1.55 Inter,system-ui,sans-serif}
+.wrap{width:min(1100px,calc(100% - 28px));margin:auto}.top{padding:18px 0;border-bottom:1px solid var(--line)}.top a{color:var(--cyan);text-decoration:none;font-weight:800}
+header.hero{padding:38px 0 22px}.eyebrow{color:var(--cyan);font-size:.72rem;font-weight:900;letter-spacing:.16em}h1{font-size:clamp(2rem,5vw,3.6rem);line-height:1.08;margin:10px 0}p{color:var(--muted)}
+.panel{margin:16px 0;padding:20px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,#14233b,#0d1729)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.pill{border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-size:.75rem;color:var(--muted)}.pill.ok{color:var(--green);border-color:#286b55}.pill.warn{color:var(--amber);border-color:#765d34}.pill.bad{color:var(--red);border-color:#813d50}
+.flow{display:grid;gap:10px;max-width:760px;margin:18px auto}.node{padding:15px;border:1px solid #314766;border-radius:14px;background:#0c1728}.node b{display:block}.node small{color:var(--muted)}.node.primary{border-color:#2f8b88;background:#12333c}.node.fallback{border-color:#49658b}.node.owner{border-color:#75629a}.arrow{text-align:center;color:var(--cyan);font-size:1.4rem;line-height:1}.arrow small{display:block;font-size:.7rem;color:var(--amber)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.item{padding:13px;border:1px solid var(--line);border-radius:12px;background:#0b1628}.item strong{display:block}.muted{color:var(--muted);font-size:.82rem}
+button,.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border:1px solid #426080;border-radius:10px;background:#142b43;color:var(--text);font:inherit;font-weight:800;text-decoration:none;cursor:pointer}.btn.primary{background:linear-gradient(100deg,var(--cyan),#8eb9ff);color:#07131c;border:0}.actions{display:flex;gap:10px;flex-wrap:wrap}
+.note{border-left:3px solid var(--amber);padding:10px 13px;background:#ffc9780d;border-radius:0 9px 9px 0;font-size:.82rem;color:#d3ddec}
+footer{padding:24px 0 40px;color:var(--muted);font-size:.75rem}
+@media(max-width:600px){.grid{grid-template-columns:1fr}.panel{padding:15px}}
+</style>
+</head>
+<body>
+<div class="top"><div class="wrap row"><a href="./">← PETCHNAKA PROJECT HUB</a><span class="pill">AI FLOW TEST · READ-ONLY STATUS</span></div></div>
+<main class="wrap">
+<header class="hero"><div class="eyebrow">PETCHNIKKA JARVIS CORE · PROVIDER FLOW</div><h1>แผนผังทดสอบเส้นทาง AI</h1><p>แสดงเส้นทาง AI หลัก การส่งต่องานเมื่อขัดข้อง และการรับผลกลับ โดยแยก “ตั้งค่าแล้ว” ออกจาก “ทดสอบประมวลผลจริงแล้ว” อย่างชัดเจน</p></header>
+<section class="panel">
+<div class="row"><div><h2>เส้นทางการไหลของงาน</h2><div class="muted">ลำดับตามนโยบาย Provider Failover ที่กำหนดไว้</div></div><span id="healthState" class="pill">กำลังอ่าน Health API…</span></div>
+<div class="flow">
+<div class="node owner"><b>01 · GPT — สมองหลัก / ผู้วิเคราะห์และตรวจรับ</b><small>วิเคราะห์คำสั่ง วางแผน และอนุมัติการเปลี่ยนแปลง</small></div><div class="arrow">↓</div>
+<div class="node"><b>02 · PETCHNIKKA JARVIS CORE — ศูนย์ควบคุม</b><small>รับคำสั่ง จัดคิว ส่งงาน และรวบรวมผลกลับ</small></div><div class="arrow">↓</div>
+<div class="node primary"><b>03 · Local Qwen — AI หลักบน Lenovo</b><small id="qwenStatus">รอตรวจสอบการตั้งค่า</small></div><div class="arrow"><small>เมื่อ Local Qwen / Bridge ล้มเหลวตามเงื่อนไข</small>↓</div>
+<div class="node fallback"><b>04 · Groq — AI สำรองลำดับ 1</b><small id="groqStatus">รอตรวจสอบการตั้งค่า</small></div><div class="arrow"><small>เมื่อ Groq ใช้งานไม่ได้ตามเงื่อนไข</small>↓</div>
+<div class="node fallback"><b>05 · Gemini — AI สำรองลำดับ 2</b><small id="geminiStatus">รอตรวจสอบการตั้งค่า</small></div><div class="arrow">↓</div>
+<div class="node owner"><b>06 · JARVIS รับผลกลับ → GPT ตรวจรับ</b><small>บันทึก Provider ที่ใช้ ประวัติ Failover และผลลัพธ์ โดยไม่เปิดเผย API Key</small></div>
+</div>
+<p class="note">แผนผังนี้แสดงลำดับที่ออกแบบไว้ ไม่ได้หมายความว่ามีการบังคับให้ทุกงานไหลผ่าน Groq และ Gemini ต่อกัน งานจะเปลี่ยน Provider เฉพาะเมื่อเกิดข้อผิดพลาดที่เข้าเงื่อนไขเท่านั้น</p>
+</section>
+<section class="panel">
+<div class="row"><div><h2>สถานะจากระบบจริง</h2><div class="muted">อ่านจาก JARVIS /api/health เท่านั้น ไม่มีการแก้ไขข้อมูลหรือการตั้งค่า</div></div><button id="refresh">ตรวจสถานะใหม่</button></div>
+<div class="grid" style="margin-top:14px">
+<div class="item"><strong>API / Server</strong><span id="serverStatus" class="muted">ยังไม่อ่าน</span></div>
+<div class="item"><strong>Supabase</strong><span id="dbStatus" class="muted">ยังไม่อ่าน</span></div>
+<div class="item"><strong>Local Qwen</strong><span id="qwenConfig" class="muted">ยังไม่อ่าน</span></div>
+<div class="item"><strong>Groq</strong><span id="groqConfig" class="muted">ยังไม่อ่าน</span></div>
+<div class="item"><strong>Gemini</strong><span id="geminiConfig" class="muted">ยังไม่อ่าน</span></div>
+<div class="item"><strong>Health API ตรวจล่าสุด</strong><span id="checkedAt" class="muted">—</span></div>
+</div>
+</section>
+<section class="panel">
+<h2>รายการทดสอบการประมวลผลจริง</h2>
+<p>Health API บอกได้ว่าตั้งค่า Provider ไว้หรือไม่ แต่การยืนยันว่า AI ตอบงานได้และ Failover ทำงานจริง ต้องมีผลทดสอบ Inference พร้อม Provider และ Job ID</p>
+<div class="grid">
+<div class="item"><strong>ทดสอบ 1 · Local Qwen</strong><span class="muted">ส่งงานจาก JARVIS ไป Lenovo และรับผลกลับ</span><p><span class="pill warn">ยังไม่ได้ยืนยัน Live Inference ในหน้านี้</span></p></div>
+<div class="item"><strong>ทดสอบ 2 · Groq Failover</strong><span class="muted">จำลอง Local Qwen Bridge ล้มเหลวใน Test Mode แล้วตรวจ Provider ที่รับงาน</span><p><span class="pill warn">ยังไม่ได้ทดสอบ Failover</span></p></div>
+<div class="item"><strong>ทดสอบ 3 · Gemini Failover</strong><span class="muted">จำลอง Groq ล้มเหลวใน Test Mode แล้วตรวจ Provider ที่รับงาน</span><p><span class="pill warn">ยังไม่ได้ทดสอบ Failover</span></p></div>
+<div class="item"><strong>ทดสอบ 4 · Recovery</strong><span class="muted">คืนสภาพจำลองและตรวจการกลับไปใช้ Local Qwen</span><p><span class="pill warn">ยังไม่ได้ทดสอบ Recovery</span></p></div>
+</div>
+<div class="actions" style="margin-top:16px"><a class="btn primary" href="https://petchnikka-jarvis-core.onrender.com/command-center" target="_blank" rel="noopener">เปิด JARVIS Command Center</a><a class="btn" href="https://petchnikka-jarvis-core.onrender.com/" target="_blank" rel="noopener">เปิดหน้าสั่งงาน JARVIS</a></div>
+<p class="note" style="margin-top:16px">ไม่กรอก Owner Token ใน Project Hub และไม่ทดสอบด้วยการปิดบริการจริง หน้านี้ยังไม่เรียก Endpoint ที่ต้องยืนยันตัวตน จึงไม่สร้างงานจริงหรือใช้โควตา AI</p>
+</section>
+</main>
+<footer class="wrap">PETCHNAKA PROJECT HUB · AI FLOW TEST · Read-only health view</footer>
+<script>
+const API='https://petchnikka-jarvis-core.onrender.com/api/health';
+const el=id=>document.getElementById(id);
+function yes(v){return v===true?'ตั้งค่าแล้ว':v===false?'ยังไม่ได้ตั้งค่า':'ไม่ระบุใน Health API'}
+function label(obj){if(!obj)return 'ไม่มีข้อมูล';if(typeof obj==='string')return obj;return obj.provider?obj.provider+(obj.model?' · '+obj.model:''):obj.status||JSON.stringify(obj)}
+async function load(){
+ el('healthState').textContent='กำลังอ่าน Health API…';
+ try{
+  const r=await fetch(API,{headers:{Accept:'application/json'},cache:'no-store'});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  const h=await r.json(),ai=h.ai||{},primary=ai.primary||{},chain=ai.fallback_chain||[];
+  el('healthState').textContent='Health API HTTP '+r.status;
+  el('healthState').className='pill ok';
+  el('serverStatus').textContent=(h.server||h.status||'ตอบกลับแล้ว')+' · '+(h.service||'JARVIS CORE');
+  el('dbStatus').textContent=label(h.database||h.db);
+  const qwen=primary.provider==='Local Qwen'||String(primary.provider||'').toLowerCase().includes('qwen');
+  el('qwenConfig').textContent=(qwen?'Primary · ':'')+label(primary);
+  el('qwenStatus').textContent='Health API: '+(qwen?'กำหนดเป็น AI หลัก':'ไม่ได้ระบุเป็น AI หลัก')+' · ต้องทดสอบ Agent/Inference แยก';
+  const groq=chain.find(x=>String(x.provider||'').toLowerCase()==='groq');
+  const gemini=chain.find(x=>String(x.provider||'').toLowerCase()==='gemini');
+  el('groqConfig').textContent=label(groq);
+  el('geminiConfig').textContent=label(gemini);
+  el('groqStatus').textContent='Health API: '+label(groq)+' · ยังไม่ใช่หลักฐานการตอบงานจริง';
+  el('geminiStatus').textContent='Health API: '+label(gemini)+' · ยังไม่ใช่หลักฐานการตอบงานจริง';
+  el('checkedAt').textContent=new Date().toLocaleString('th-TH');
+ }catch(e){
+  el('healthState').textContent='อ่าน Health API ไม่สำเร็จ';
+  el('healthState').className='pill bad';
+  ['serverStatus','dbStatus','qwenConfig','groqConfig','geminiConfig'].forEach(id=>el(id).textContent='ตรวจไม่ได้: '+e.message);
+  el('checkedAt').textContent='—';
+ }
+}
+el('refresh').addEventListener('click',load);load();
+</script>
+</body></html>
