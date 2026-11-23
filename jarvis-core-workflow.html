@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#08111f">
+  <meta name="description" content="ผังสถาปัตยกรรมและขั้นตอนการทำงานอ้างอิงของ PETCHNIKKA JARVIS CORE สำหรับการต่อยอดรองรับโครงการต่าง ๆ">
+  <title>PETCHNIKKA JARVIS CORE | System Blueprint</title>
+  <style>
+    :root{color-scheme:dark;--bg:#08111f;--panel:#101e32;--panel2:#142640;--line:#2a405d;--text:#eef5ff;--muted:#a8b8ce;--cyan:#67e4dc;--blue:#86b4ff;--violet:#c1a8ff;--green:#80e1b5;--gold:#ffd08b}
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(ellipse at 10% 0%,#17415a 0,transparent 34%),radial-gradient(ellipse at 95% 8%,#342653 0,transparent 30%),var(--bg);color:var(--text);font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif}
+    a{color:var(--cyan)}
+    .wrap{width:min(1120px,calc(100% - 32px));margin:auto}
+    header{padding:24px 0 12px;border-bottom:1px solid #263a55;background:#08111fbd}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+    .brand{font-weight:900;letter-spacing:.06em}
+    .back{font-size:.88rem;text-decoration:none;border:1px solid var(--line);padding:8px 12px;border-radius:10px}
+    main{padding:36px 0 64px}
+    .eyebrow{color:var(--cyan);font-size:.75rem;font-weight:900;letter-spacing:.17em}
+    h1{font-size:clamp(2rem,5vw,3.7rem);line-height:1.12;letter-spacing:-.04em;margin:10px 0}
+    h2{font-size:clamp(1.35rem,3vw,2rem);margin:0 0 8px}
+    h3{font-size:1.05rem;margin:0 0 6px}
+    p{margin:0 0 12px}
+    .lead{max-width:850px;color:#c1cee0;font-size:1.05rem}
+    .notice{margin:22px 0;padding:14px 16px;border:1px solid #765d36;border-left:4px solid var(--gold);border-radius:12px;background:#ffd08b0d;color:#f5dfbd}
+    section{margin-top:38px}
+    .sub{color:var(--muted);margin-bottom:18px}
+    .stack{display:grid;gap:10px;max-width:820px;margin:22px auto}
+    .node{padding:17px 20px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(145deg,#172943,#0e1a2d);text-align:center}
+    .node strong{display:block;font-size:1.12rem}
+    .node small{display:block;color:var(--muted);margin-top:3px}
+    .node.user{border-color:#7a639e;background:linear-gradient(145deg,#302548,#171c31)}
+    .node.gpt{border-color:#4b7ab4;background:linear-gradient(145deg,#1d3d63,#14243c)}
+    .node.jarvis{border:2px solid #3d9b9a;background:linear-gradient(145deg,#164a50,#10283a);box-shadow:0 0 28px #67e4dc12}
+    .node.mini{border-color:#418b6e;background:linear-gradient(145deg,#174735,#112b2b)}
+    .node.quality{border-color:#79633e}
+    .arrow{text-align:center;color:var(--cyan);font-size:1.55rem;line-height:1}
+    .arrow small{display:block;color:var(--muted);font-size:.72rem;line-height:1.5}
+    .inside{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+    .inside span,.mini-grid span{padding:9px 7px;border-radius:9px;background:#ffffff0b;border:1px solid #ffffff17;font-size:.82rem}
+    .mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:13px}
+    .split{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .card{padding:17px;border:1px solid var(--line);border-radius:15px;background:linear-gradient(145deg,#14243a,#0d192b)}
+    .card p,.card li{color:#c0cde0;font-size:.9rem}
+    .card ul{padding-left:20px;margin:8px 0 0}
+    .steps{counter-reset:step;display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .step{counter-increment:step;position:relative;padding:16px 16px 16px 58px;border:1px solid var(--line);border-radius:14px;background:#101e32}
+    .step:before{content:counter(step);position:absolute;left:16px;top:16px;width:28px;height:28px;display:grid;place-items:center;border-radius:9px;background:#173f4a;color:var(--cyan);font-weight:900}
+    .step p{color:var(--muted);font-size:.88rem;margin:4px 0 0}
+    .projects{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .project{padding:15px;border:1px solid var(--line);border-radius:13px;background:#101e32}
+    .project strong{display:block}
+    .project small{color:var(--muted)}
+    .rule-list{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+    .rule{padding:12px 14px;border:1px solid #29435a;border-radius:11px;background:#0e1b2c;color:#d1dceb;font-size:.9rem}
+    .rule:before{content:"✓";color:var(--green);font-weight:900;margin-right:9px}
+    footer{padding:20px 0 32px;border-top:1px solid #263a55;color:var(--muted);font-size:.82rem}
+    @media(max-width:760px){.inside{grid-template-columns:repeat(2,1fr)}.split{grid-template-columns:1fr}.projects{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:520px){.steps,.rule-list{grid-template-columns:1fr}.mini-grid{grid-template-columns:repeat(2,1fr)}main{padding-top:25px}.wrap{width:min(100% - 24px,1120px)}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap top">
+      <div class="brand">PETCHNAKA PROJECT HUB <span style="color:#67e4dc">/</span> SYSTEM BLUEPRINT</div>
+      <a class="back" href="./">กลับหน้า PROJECT HUB</a>
+    </div>
+  </header>
+  <main class="wrap">
+    <div class="eyebrow">ARCHITECTURE • WORKFLOW • REUSABLE FRAMEWORK</div>
+    <h1>PETCHNIKKA<br>JARVIS CORE</h1>
+    <p class="lead">ผังอธิบายศูนย์บัญชาการกลาง วิธีรับคำสั่ง มอบหมายงาน ตรวจสอบ และส่งมอบผลงาน โดยออกแบบให้รองรับโครงการปัจจุบันและสามารถต่อยอดไปยังงานประเภทอื่นในอนาคตได้</p>
+    <div class="notice"><strong>หมายเหตุสำคัญ:</strong> หน้านี้เป็นผังเป้าหมายและเอกสารอ้างอิงสำหรับทำความเข้าใจสถาปัตยกรรม ไม่ใช่รายงานยืนยันสถานะว่าทุกส่วนเชื่อมต่อหรือพร้อมใช้งานแล้ว สถานะจริงต้องตรวจสอบและทดสอบแยกตามระบบ</div>
+
+    <section>
+      <h2>1. ผังสถาปัตยกรรมหลัก</h2>
+      <p class="sub">แยกบทบาทให้ชัดเจน: GPT คิดและตรวจรับ • JARVIS CORE ควบคุมและประสานงาน • AI Mini ลงมือปฏิบัติ</p>
+      <div class="stack">
+        <div class="node user"><strong>ผู้ใช้งาน / เจ้าของโครงการ</strong><small>กำหนดเป้าหมาย • สั่งงาน • อนุมัติการเปลี่ยนแปลงสำคัญ</small></div>
+        <div class="arrow">↓<small>ส่งคำขอและข้อกำหนด</small></div>
+        <div class="node gpt"><strong>GPT — สมองหลัก</strong><small>วิเคราะห์ • วางแผน • ออกแบบ • สร้างคำสั่งงาน • ตรวจรับผล</small></div>
+        <div class="arrow">↕<small>สื่อสารสองทาง: ส่งคำสั่งและรับรายงาน</small></div>
+        <div class="node jarvis">
+          <strong>PETCHNIKKA JARVIS CORE — ศูนย์บัญชาการกลาง</strong>
+          <small>จัดการงานและคิว • ควบคุมสิทธิ์ • ประสานผู้ปฏิบัติงาน • ติดตามสถานะ • เก็บประวัติ</small>
+          <div class="inside">
+            <span>จัดการโครงการ</span><span>จัดการคิวงาน</span><span>ควบคุมสิทธิ์</span><span>ติดตามงาน</span>
+            <span>บันทึกประวัติ</span><span>แจ้งเตือน</span><span>สำรอง/กู้คืน</span><span>รายงานผล</span>
+          </div>
+        </div>
+        <div class="arrow">↕<small>มอบหมายงานและรับผลกลับผ่านช่องทางที่ได้รับอนุญาต</small></div>
+        <div class="node mini">
+          <strong>AI Mini — ผู้ปฏิบัติงานบน Lenovo</strong>
+          <small>Local Agent รับงานและส่งผล • Local Qwen ประมวลผล</small>
+          <div class="mini-grid"><span>อ่าน/ค้นหาไฟล์</span><span>วิเคราะห์งาน</span><span>เขียน/แก้ไข</span><span>ทดสอบ</span><span>รายงานผล</span><span>ส่งไฟล์กลับ</span></div>
+        </div>
+        <div class="arrow">↓<small>ผลงานและหลักฐานเข้าสู่กระบวนการตรวจสอบ</small></div>
+        <div class="node quality"><strong>CircleCI + Staging / Live Test</strong><small>ตรวจคุณภาพโค้ด • ทดสอบระบบจริง • ตรวจผลตามเกณฑ์</small></div>
+        <div class="arrow">↓</div>
+        <div class="node user"><strong>GPT ตรวจรับ → เจ้าของอนุมัติ</strong><small>Merge และ Deploy Production ได้เมื่อได้รับอนุมัติเท่านั้น</small></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>2. วงจรการทำงานของหนึ่งคำสั่ง</h2>
+      <p class="sub">ทุกงานต้องตรวจสอบย้อนกลับได้ ตั้งแต่ผู้สั่ง ผู้รับผิดชอบ การเปลี่ยนแปลง ไปจนถึงผลทดสอบ</p>
+      <div class="steps">
+        <article class="step"><h3>รับคำสั่งและวิเคราะห์</h3><p>GPT ทำความเข้าใจเป้าหมาย ขอบเขต ข้อจำกัด และเกณฑ์สำเร็จ</p></article>
+        <article class="step"><h3>สร้างงานใน JARVIS CORE</h3><p>กำหนดโครงการ ผู้รับผิดชอบ สิทธิ์ ลำดับงาน และสถานะคิว</p></article>
+        <article class="step"><h3>AI Mini รับงาน</h3><p>ตรวจสอบสิทธิ์และบริบทก่อนอ่านไฟล์หรือเริ่มปฏิบัติงาน</p></article>
+        <article class="step"><h3>ลงมือทำในพื้นที่ทำงาน</h3><p>วิเคราะห์ แก้ไข และทดสอบ โดยไม่แตะ Production โดยตรง</p></article>
+        <article class="step"><h3>ส่งผลงานและหลักฐานกลับ</h3><p>ส่งไฟล์ที่เปลี่ยน รายงาน ผลทดสอบ และข้อจำกัดกลับศูนย์บัญชาการ</p></article>
+        <article class="step"><h3>GPT ตรวจรับและ CI ตรวจโค้ด</h3><p>เทียบข้อกำหนด ตรวจความถูกต้อง และให้ CircleCI รันทดสอบ</p></article>
+        <article class="step"><h3>Staging / Live Test</h3><p>ทดสอบการเชื่อมต่อและพฤติกรรมระบบจริงในสภาพแวดล้อมแยก</p></article>
+        <article class="step"><h3>อนุมัติและส่งมอบ</h3><p>สรุปหลักฐานให้เจ้าของอนุมัติก่อน Merge / Deploy แล้วตรวจหลังเผยแพร่</p></article>
+      </div>
+    </section>
+
+    <section>
+      <h2>3. รองรับหลายโครงการโดยไม่ปะปนกัน</h2>
+      <p class="sub">ใช้ศูนย์บัญชาการร่วมกัน แต่ทรัพยากรเฉพาะโครงการยังคงแยกขอบเขตและสิทธิ์ของตนเอง</p>
+      <div class="card" style="text-align:center;margin-bottom:12px"><h3>PETCHNIKKA JARVIS CORE</h3><p>ศูนย์ควบคุมกลาง • มอบหมายงาน • ติดตามสถานะ • ตรวจสอบประวัติ</p></div>
+      <div class="projects">
+        <div class="project"><strong>SAFE-ELEC</strong><small>Server / Database / Firmware / สิทธิ์เฉพาะ</small></div>
+        <div class="project"><strong>AUTO IoT PRO</strong><small>Server / Database / Firmware / สิทธิ์เฉพาะ</small></div>
+        <div class="project"><strong>AUTO SHOP PRO</strong><small>Server / Database / ระบบร้านค้า / สิทธิ์เฉพาะ</small></div>
+        <div class="project"><strong>โครงการใหม่ในอนาคต</strong><small>เพิ่มขอบเขตงานและทรัพยากรแยกตามโครงการ</small></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>4. ประตูตรวจสอบก่อนขึ้นระบบจริง</h2>
+      <p class="sub">ห้ามข้ามขั้นเพียงเพราะโค้ดคอมไพล์ผ่านหรือ Agent ออนไลน์</p>
+      <div class="split">
+        <article class="card"><h3>ตรวจโค้ด</h3><p>ตรวจความถูกต้อง ความปลอดภัย การเปลี่ยนแปลง และผล CircleCI</p></article>
+        <article class="card"><h3>ทดสอบการทำงาน</h3><p>ทดสอบ GPT → JARVIS CORE → AI Mini → ผลกลับ GPT และ Staging</p></article>
+        <article class="card"><h3>อนุมัติการเผยแพร่</h3><p>เจ้าของโครงการตรวจรายงานและอนุมัติ Merge / Deploy ก่อนทุกครั้ง</p></article>
+      </div>
+    </section>
+
+    <section>
+      <h2>5. หลักการควบคุมที่ใช้ร่วมกันทุกโครงการ</h2>
+      <div class="rule-list">
+        <div class="rule">ตรวจสอบระบบเดิมก่อนสร้างหรือแก้ไข</div>
+        <div class="rule">แยกข้อมูล ฐานข้อมูล และสิทธิ์ของแต่ละโครงการ</div>
+        <div class="rule">สำรองข้อมูลที่จำเป็นก่อนเปลี่ยนแปลงหรือลบ</div>
+        <div class="rule">ไม่ให้ AI ปฏิบัติงานเกินขอบเขตสิทธิ์</div>
+        <div class="rule">ไม่ใช้ Production เป็นพื้นที่ทดลอง</div>
+        <div class="rule">ไม่ซื้อบริการหรือใช้เครดิตแบบเสียเงินโดยพลการ</div>
+        <div class="rule">เก็บประวัติคำสั่ง ผู้ปฏิบัติ และผลทดสอบ</div>
+        <div class="rule">Merge / Deploy ต้องได้รับอนุมัติจากเจ้าของ</div>
+      </div>
+    </section>
+  </main>
+  <footer><div class="wrap">PETCHNAKA PROJECT HUB • PETCHNIKKA JARVIS CORE System Blueprint • เอกสารอ้างอิงเพื่อการศึกษาและต่อยอดสถาปัตยกรรม</div></footer>
+</body>
+</html>
