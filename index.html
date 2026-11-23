@@ -190,6 +190,7 @@
         <div class="sum-chip completed"><span>งานล่าสุดสำเร็จ</span><strong id="dept-completed">—</strong></div>
         <div class="sum-chip failed"><span>พบข้อผิดพลาด</span><strong id="dept-failed">—</strong></div>
         <div class="sum-chip"><span>ยังไม่มีข้อมูลงาน</span><strong id="dept-no-data">—</strong></div>
+        <div class="sum-chip"><span>ไม่ทราบสถานะ</span><strong id="dept-unknown">—</strong></div>
       </div>
       <div class="tools">
         <div class="filters" aria-label="กรองสถานะฝ่าย">
@@ -199,6 +200,7 @@
           <button class="filter" type="button" data-filter="completed" aria-pressed="false">สำเร็จ</button>
           <button class="filter" type="button" data-filter="failed" aria-pressed="false">ผิดพลาด</button>
           <button class="filter" type="button" data-filter="no_data" aria-pressed="false">ไม่มีข้อมูลงาน</button>
+          <button class="filter" type="button" data-filter="unknown" aria-pressed="false">ไม่ทราบสถานะ</button>
         </div>
         <input class="search" id="dept-search" type="search" placeholder="ค้นหาชื่อฝ่าย..." aria-label="ค้นหาฝ่าย">
       </div>
@@ -332,7 +334,7 @@
         return {...d,status:item.status,last_activity_at:item.last_activity_at||null};
       });
       ['running','queued','completed','failed','no_data','unknown'].forEach(k=>{
-        const node=el('dept-'+k);
+        const node=el(k==='no_data'?'dept-no-data':'dept-'+k);
         if(node)node.textContent=String(c[k]);
       });
       el('dept-total').textContent=String(c.total);
