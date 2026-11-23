@@ -36,6 +36,12 @@ footer{padding:24px 0 40px;color:var(--muted);font-size:.75rem}
 <p class="note">แผนผังนี้แสดงลำดับที่ออกแบบไว้ ไม่ได้หมายความว่ามีการบังคับให้ทุกงานไหลผ่าน Groq และ Gemini ต่อกัน งานจะเปลี่ยน Provider เฉพาะเมื่อเกิดข้อผิดพลาดที่เข้าเงื่อนไขเท่านั้น</p>
 </section>
 <section class="panel">
+<div class="row"><div><h2>GPT Power Call · เชื่อมต่อผ่าน JARVIS</h2><span class="muted">ใช้งาน GPT จริงผ่าน Backend ที่มีการยืนยัน Owner Token</span></div><span class="pill warn">ต้องยืนยันตัวตน</span></div>
+<p>Project Hub เป็นหน้ารายงานสาธารณะ จึงไม่เก็บ Owner Token หรือ OpenAI API Key ไว้ในหน้าเว็บนี้ กดเปิด JARVIS Command Center เพื่อส่งคำสั่งให้ GPT ผ่านช่องทางที่ปลอดภัย</p>
+<div class="actions"><a class="btn primary" href="https://petchnikka-jarvis-core.onrender.com/command-center#gptPowerCall" target="_blank" rel="noopener">เปิด GPT Power Call</a></div>
+<p class="note" style="margin-top:12px">การเรียก OpenAI API มีค่าใช้จ่ายตามการใช้งานจริง และจำกัดคำขอไว้ 2 ครั้งต่อ 10 นาที · ไม่ใช่การเชื่อม ChatGPT Plus โดยตรง</p>
+</section>
+<section class="panel">
 <div class="row"><div><h2>สถานะจากระบบจริง</h2><div class="muted">อ่านจาก JARVIS /api/health เท่านั้น ไม่มีการแก้ไขข้อมูลหรือการตั้งค่า</div></div><button id="refresh">ตรวจสถานะใหม่</button></div>
 <div class="grid" style="margin-top:14px">
 <div class="item"><strong>API / Server</strong><span id="serverStatus" class="muted">ยังไม่อ่าน</span></div>
