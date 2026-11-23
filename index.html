@@ -354,7 +354,7 @@
     }catch{
       departmentStatuses=DEPARTMENTS.map(d=>({...d,status:'no_data',last_activity_at:null}));
       ['running','queued','completed','failed','no_data','unknown'].forEach(k=>{
-        const node=el('dept-'+k);
+        const node=el(k==='no_data'?'dept-no-data':'dept-'+k);
         if(node)node.textContent='—';
       });
       el('dept-total').textContent='—';
