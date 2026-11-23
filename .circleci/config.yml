@@ -10,7 +10,20 @@ jobs:
           name: Validate PROJECT HUB HTML
           command: python scripts/check_hub.py
 
+  hub-browser-e2e:
+    docker:
+      - image: mcr.microsoft.com/playwright:v1.56.1-noble
+    steps:
+      - checkout
+      - run:
+          name: Install pinned browser test dependency
+          command: npm install --no-audit --no-fund
+      - run:
+          name: Test live data rendering, stale data, and API failure states
+          command: npm run test:e2e
+
 workflows:
   project-hub-validation:
     jobs:
       - hub-quality-check
+      - hub-browser-e2e

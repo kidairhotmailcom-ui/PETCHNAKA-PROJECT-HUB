@@ -190,6 +190,7 @@
         <div class="sum-chip completed"><span>งานล่าสุดสำเร็จ</span><strong id="dept-completed">—</strong></div>
         <div class="sum-chip failed"><span>พบข้อผิดพลาด</span><strong id="dept-failed">—</strong></div>
         <div class="sum-chip"><span>ยังไม่มีข้อมูลงาน</span><strong id="dept-no-data">—</strong></div>
+        <div class="sum-chip"><span>ไม่ทราบสถานะ</span><strong id="dept-unknown">—</strong></div>
       </div>
       <div class="tools">
         <div class="filters" aria-label="กรองสถานะฝ่าย">
@@ -199,6 +200,7 @@
           <button class="filter" type="button" data-filter="completed" aria-pressed="false">สำเร็จ</button>
           <button class="filter" type="button" data-filter="failed" aria-pressed="false">ผิดพลาด</button>
           <button class="filter" type="button" data-filter="no_data" aria-pressed="false">ไม่มีข้อมูลงาน</button>
+          <button class="filter" type="button" data-filter="unknown" aria-pressed="false">ไม่ทราบสถานะ</button>
         </div>
         <input class="search" id="dept-search" type="search" placeholder="ค้นหาชื่อฝ่าย..." aria-label="ค้นหาฝ่าย">
       </div>
@@ -304,30 +306,62 @@
       el('hero-up').textContent='—';el('hero-up-note').textContent='ยังอ่านข้อมูลไม่ได้';
     }
   }
+  function validateDepartmentPayload(data){
+    const expectedKeys=Object.values(API_DEPARTMENT_KEYS);
+    const allowedStatuses=new Set(['running','queued','completed','failed','no_data','unknown']);
+    if(!data||!Array.isArray(data.departments)||data.departments.length!==17)throw new Error('invalid_department_count');
+    if(!['connected','degraded'].includes(data.status))throw new Error('invalid_connection_status');
+    const keys=data.departments.map(item=>item?.key);
+    if(new Set(keys).size!==17||expectedKeys.some(key=>!keys.includes(key)))throw new Error('invalid_department_keys');
+    for(const item of data.departments){
+      if(!allowedStatuses.has(item.status))throw new Error('invalid_department_status');
+      if(item.last_activity_at!==null&&item.last_activity_at!==undefined&&Number.isNaN(new Date(item.last_activity_at).getTime()))throw new Error('invalid_department_timestamp');
+    }
+    const c=data.counts;
+    const countKeys=['running','queued','completed','failed','no_data','unknown'];
+    if(!c||c.total!==17||countKeys.some(key=>!Number.isInteger(c[key])||c[key]<0)||countKeys.reduce((sum,key)=>sum+c[key],0)!==17)throw new Error('invalid_department_counts');
+    return c;
+  }
   async function loadDepartmentStatus(){
     try{
       const r=await fetch('https://petchnikka-jarvis-core.onrender.com/api/integrations/project-hub/department-status',{headers:{Accept:'application/json'},cache:'no-store'});
       if(!r.ok)throw new Error('unavailable');
       const data=await r.json();
-      if(!Array.isArray(data.departments)||data.departments.length!==17)throw new Error('invalid_payload');
+      const c=validateDepartmentPayload(data);
       const statusMap=Object.fromEntries(data.departments.map(x=>[x.key,x]));
-      departmentStatuses=DEPARTMENTS.map(d=>({...d,status:statusMap[API_DEPARTMENT_KEYS[d.key]||d.key]?.status||'no_data',last_activity_at:statusMap[API_DEPARTMENT_KEYS[d.key]||d.key]?.last_activity_at||null}));
-      const c=data.counts||{};
-      ['running','queued','completed','failed','no_data'].forEach(k=>el('dept-'+k).textContent=String(c[k]??0));
-      el('dept-total').textContent=String(c.total??17);
-      const active=(c.running??0)+(c.queued??0);
-      el('hero-dept-state').textContent=active+'/'+(c.total??17);
-      el('hero-dept-note').textContent=(c.failed??0)+' ผิดพลาด · '+(c.no_data??0)+' ไม่มีข้อมูลงาน';
-      setState('dept-connection','dept-connection-label',data.status==='degraded'?'degraded':'connected',data.status==='degraded'?'มีภารกิจที่ผิดพลาด':'รับข้อมูลสถานะจาก JARVIS CORE');
-      el('dept-updated').textContent='ข้อมูลภารกิจล่าสุด: '+fmt(data.fetched_at||data.timestamp);
+      departmentStatuses=DEPARTMENTS.map(d=>{
+        const item=statusMap[API_DEPARTMENT_KEYS[d.key]];
+        return {...d,status:item.status,last_activity_at:item.last_activity_at||null};
+      });
+      ['running','queued','completed','failed','no_data','unknown'].forEach(k=>{
+        const node=el(k==='no_data'?'dept-no-data':'dept-'+k);
+        if(node)node.textContent=String(c[k]);
+      });
+      el('dept-total').textContent=String(c.total);
+      const active=c.running+c.queued;
+      el('hero-dept-state').textContent=active+'/'+c.total;
+      el('hero-dept-note').textContent=c.failed+' ผิดพลาด · '+c.no_data+' ไม่มีข้อมูลงาน · '+c.unknown+' ไม่ทราบสถานะ';
+      const stamp=data.fetched_at||data.timestamp;
+      const date=stamp?new Date(stamp):null;
+      const valid=!!date&&!Number.isNaN(date.getTime());
+      if(!valid)throw new Error('invalid_snapshot_timestamp');
+      const stale=Date.now()-date.getTime()>5*60*1000;
+      const connectionState=stale?'degraded':data.status;
+      const connectionLabel=stale?'ข้อมูลอาจล้าสมัย':data.status==='degraded'?'มีภารกิจที่ผิดพลาด':'รับข้อมูลสถานะจาก JARVIS CORE';
+      setState('dept-connection','dept-connection-label',connectionState,connectionLabel);
+      el('dept-updated').textContent='ข้อมูลภารกิจล่าสุด: '+fmt(stamp)+(stale?' · เกิน 5 นาที โปรดตรวจสอบ':'');
       renderDepartments();
     }catch{
       departmentStatuses=DEPARTMENTS.map(d=>({...d,status:'no_data',last_activity_at:null}));
-      ['running','queued','completed','failed'].forEach(k=>el('dept-'+k).textContent='—');
-      el('dept-no_data').textContent='17';el('dept-total').textContent='17';
-      el('hero-dept-state').textContent='—';el('hero-dept-note').textContent='ยังยืนยันสถานะรายฝ่ายไม่ได้';
+      ['running','queued','completed','failed','no_data','unknown'].forEach(k=>{
+        const node=el(k==='no_data'?'dept-no-data':'dept-'+k);
+        if(node)node.textContent='—';
+      });
+      el('dept-total').textContent='—';
+      el('hero-dept-state').textContent='—';
+      el('hero-dept-note').textContent='ยังยืนยันสถานะรายฝ่ายไม่ได้';
       setState('dept-connection','dept-connection-label','unavailable','ยังเชื่อมข้อมูลสถานะรายฝ่ายไม่ได้');
-      el('dept-updated').textContent='ยังไม่มีข้อมูลภารกิจที่ยืนยันได้จาก JARVIS CORE';
+      el('dept-updated').textContent='ไม่สามารถยืนยันข้อมูลและเวลาปรับปรุงจาก JARVIS CORE ได้';
       renderDepartments();
     }
   }
