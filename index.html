@@ -142,6 +142,21 @@
     <div class="hero-actions"><a class="action primary" href="#departments">ดูสถานะ 17 ฝ่าย ↓</a><a class="action" href="#flow">ดูวงจรการทำงาน</a><a class="action" href="ai-flow-test.html">เปิดหน้า AI FLOW TEST</a></div>
   </section>
 
+  <section class="wrap section panel" aria-labelledby="project-health-title">
+    <div class="uptime-head">
+      <div><div class="section-kicker">LIVE PROJECT CONNECTIVITY</div><h2 id="project-health-title">สถานะการเชื่อมต่อโครงการ</h2><p>อ่านสถานะจาก JARVIS CORE และ API ของแต่ละโครงการแบบอ่านอย่างเดียว</p></div>
+      <span class="state-pill" id="project-health-state" data-state="loading"><i class="pulse"></i><span id="project-health-label">กำลังเชื่อมต่อ...</span></span>
+    </div>
+    <div class="metrics">
+      <div class="metric"><span>JARVIS CORE</span><strong id="project-jarvis">—</strong></div>
+      <div class="metric"><span>SAFE-ELEC Mini Server</span><strong id="project-safe">—</strong></div>
+      <div class="metric"><span>AUTO IoT PRO</span><strong id="project-iot">—</strong></div>
+      <div class="metric"><span>AUTO SHOP PRO</span><strong id="project-shop">—</strong></div>
+      <div class="metric"><span>PROJECT HUB</span><strong id="project-hub">—</strong></div>
+    </div>
+    <div class="meta"><span id="project-health-updated">ยังไม่มีข้อมูลตรวจสอบ</span><span>Refresh ทุก 60 วินาที · ไม่แสดงสถานะปลอมเมื่อเชื่อมต่อไม่ได้</span></div>
+  </section>
+
   <section class="wrap section">
     <div class="overview">
       <article class="overview-card lead"><span class="live-pill"><i class="pulse"></i> COMMAND CENTER OVERVIEW</span><span class="overview-value">17 / 17</span><div class="overview-note">ทะเบียนฝ่ายส่วนกลางตามโครงสร้าง JARVIS CORE · ไม่ใช่จำนวน Agent ที่ออนไลน์</div></article>
@@ -288,6 +303,33 @@
     }).join(''):'<div class="empty-state">ไม่พบฝ่ายที่ตรงกับเงื่อนไข</div>';
   }
   function setState(id,labelId,state,label){el(id).dataset.state=state;el(labelId).textContent=label;}
+  const PROJECT_STATUS_LABELS={connected:'เชื่อมต่อแล้ว',degraded:'ทำงานบางส่วน',unavailable:'ติดต่อไม่ได้',not_configured:'ยังไม่ได้ตั้งค่า',unknown:'ไม่ทราบสถานะ'};
+  async function loadProjectStatuses(){
+    const ids={jarvis_core:'project-jarvis',safe_elec:'project-safe',auto_iot_pro:'project-iot',auto_shop_pro:'project-shop',project_hub:'project-hub'};
+    try{
+      const r=await fetch('https://petchnikka-jarvis-core.onrender.com/api/integrations/project-hub/system-status',{headers:{Accept:'application/json'},cache:'no-store'});
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      const data=await r.json();
+      if(data.read_only!==true||!data.projects||!data.timestamp)throw new Error('invalid_status_payload');
+      const allowed=new Set(Object.keys(ids));
+      if(Object.keys(data.projects).length!==allowed.size||Object.keys(data.projects).some(k=>!allowed.has(k)))throw new Error('invalid_project_set');
+      let degraded=false;
+      for(const [key,id] of Object.entries(ids)){
+        const status=data.projects[key]?.status||'unknown';
+        el(id).textContent=PROJECT_STATUS_LABELS[status]||PROJECT_STATUS_LABELS.unknown;
+        if(status!=='connected')degraded=true;
+      }
+      const checked=new Date(data.timestamp);
+      if(Number.isNaN(checked.getTime()))throw new Error('invalid_timestamp');
+      const stale=Date.now()-checked.getTime()>2*60*1000;
+      setState('project-health-state','project-health-label',stale?'degraded':degraded?'degraded':'connected',stale?'ข้อมูลอาจล้าสมัย':degraded?'มีโครงการที่ยังเชื่อมต่อไม่สมบูรณ์':'ทุกโครงการตอบสถานะเชื่อมต่อ');
+      el('project-health-updated').textContent='ตรวจล่าสุด: '+fmt(data.timestamp)+(stale?' · ข้อมูลเกิน 2 นาที':'');
+    }catch{
+      Object.values(ids).forEach(id=>el(id).textContent='ยืนยันไม่ได้');
+      setState('project-health-state','project-health-label','unavailable','ยังยืนยันสถานะโครงการไม่ได้');
+      el('project-health-updated').textContent='JARVIS CORE ไม่ตอบกลับหรือส่งข้อมูลไม่ถูกต้อง';
+    }
+  }
   async function loadUptime(){
     try{
       const r=await fetch('https://petchnikka-jarvis-core.onrender.com/api/integrations/uptimerobot/public-status',{headers:{Accept:'application/json'},cache:'no-store'});
@@ -372,8 +414,8 @@
   }));
   el('dept-search').addEventListener('input',renderDepartments);
   el('year').textContent=String(new Date().getFullYear());
-  renderDepartments();loadUptime();loadDepartmentStatus();
-  window.setInterval(loadUptime,60000);window.setInterval(loadDepartmentStatus,60000);
+  renderDepartments();loadUptime();loadDepartmentStatus();loadProjectStatuses();
+  window.setInterval(loadUptime,60000);window.setInterval(loadDepartmentStatus,60000);window.setInterval(loadProjectStatuses,60000);
 </script>
 </body>
 </html>
