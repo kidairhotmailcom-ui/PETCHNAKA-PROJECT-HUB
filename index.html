@@ -116,6 +116,14 @@
     .project h3{margin:9px 0 5px;font-size:.94rem}
     .project p{margin:0;color:var(--muted);font-size:.76rem}
     .project-status{display:inline-block;margin-top:12px;color:#9fded4;font-size:.68rem;font-weight:800}
+    .project-signal{display:flex;align-items:center;gap:9px;margin-top:12px;font-size:.72rem;font-weight:850}
+    .signal-dot{display:inline-block;flex:0 0 11px;width:11px;height:11px;border-radius:50%;background:#ff7185;box-shadow:0 0 0 3px #ff718522,0 0 12px #ff718577}
+    .project-signal[data-state="green"] .signal-dot{background:#55dfad;box-shadow:0 0 0 3px #55dfad22,0 0 12px #55dfad88}
+    .project-signal[data-state="green"]{color:#9df3d6}
+    .project-signal[data-state="yellow"] .signal-dot{background:#ffbf69;box-shadow:0 0 0 3px #ffbf6922,0 0 12px #ffbf6988}
+    .project-signal[data-state="yellow"]{color:#ffd49a}
+    .project-signal[data-state="red"] .signal-dot{background:#ff7185;box-shadow:0 0 0 3px #ff718522,0 0 12px #ff718588}
+    .project-signal[data-state="red"]{color:#ffb4c0}
     .governance{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
     .governance article{padding:15px;border:1px solid #33435d;border-radius:14px;background:#0d1829}
     .governance h3{margin:0 0 6px;font-size:.84rem;color:#d8e7fb}
@@ -227,10 +235,10 @@
   <section class="wrap section" id="projects" aria-labelledby="projects-title">
     <div class="section-title"><div><div class="section-kicker">PROJECT PORTFOLIO</div><h2 id="projects-title">โครงการทั้งหมดในเครือ</h2><p>แยกระบบปฏิบัติงาน แต่บริหารภาพรวมผ่าน JARVIS CORE</p></div></div>
     <div class="project-grid">
-      <article class="project" id="auto-shop-pro"><span class="project-icon">🛍️</span><h3>AUTO SHOP PRO</h3><p>ระบบร้านค้าและร้านอาหารออนไลน์ แสดงสินค้า รับคำสั่งซื้อ และจัดการงานร้าน</p><a class="project-status" href="https://kidairhotmailcom-ui.github.io/AUTO-SHOP-PRO/" target="_blank" rel="noopener noreferrer">เปิดระบบ ↗</a></article>
-      <article class="project" id="safe-elec"><span class="project-icon">⚡</span><h3>SAFE-ELEC</h3><p>ตรวจวัด เฝ้าระวัง และแจ้งเตือนระบบไฟฟ้าและพลังงาน</p><span class="project-status">อยู่ระหว่างพัฒนาและทดสอบ</span></article>
-      <article class="project" id="auto-iot-pro"><span class="project-icon">📡</span><h3>AUTO IoT PRO</h3><p>แพลตฟอร์ม IoT เชื่อมต่ออุปกรณ์ ตรวจสอบสถานะ และทำงานอัตโนมัติ</p><span class="project-status">อยู่ระหว่างพัฒนา</span></article>
-      <article class="project" id="jarvis-core"><span class="project-icon">🧠</span><h3>PETCHNIKKA JARVIS CORE</h3><p>ศูนย์บัญชาการ จัดคิว ประสานงาน ติดตามผล และตรวจรับงานส่วนกลาง</p><span class="project-status">ระบบบริหารภายใน</span></article>
+      <article class="project" id="auto-shop-pro"><span class="project-icon">🛍️</span><h3>AUTO SHOP PRO</h3><p>ระบบร้านค้าและร้านอาหารออนไลน์ แสดงสินค้า รับคำสั่งซื้อ และจัดการงานร้าน</p><div class="project-signal" data-project-signal="auto_shop_pro" data-state="unknown" role="status" aria-live="polite"><i class="signal-dot"></i><span>กำลังตรวจสอบสถานะ</span></div><a class="project-status" href="https://kidairhotmailcom-ui.github.io/AUTO-SHOP-PRO/" target="_blank" rel="noopener noreferrer">เปิดระบบ ↗</a></article>
+      <article class="project" id="safe-elec"><span class="project-icon">⚡</span><h3>SAFE-ELEC</h3><p>ตรวจวัด เฝ้าระวัง และแจ้งเตือนระบบไฟฟ้าและพลังงาน</p><div class="project-signal" data-project-signal="safe_elec" data-state="unknown" role="status" aria-live="polite"><i class="signal-dot"></i><span>กำลังตรวจสอบสถานะ</span></div></article>
+      <article class="project" id="auto-iot-pro"><span class="project-icon">📡</span><h3>AUTO IoT PRO</h3><p>แพลตฟอร์ม IoT เชื่อมต่ออุปกรณ์ ตรวจสอบสถานะ และทำงานอัตโนมัติ</p><div class="project-signal" data-project-signal="auto_iot_pro" data-state="unknown" role="status" aria-live="polite"><i class="signal-dot"></i><span>กำลังตรวจสอบสถานะ</span></div></article>
+      <article class="project" id="jarvis-core"><span class="project-icon">🧠</span><h3>PETCHNIKKA JARVIS CORE</h3><p>ศูนย์บัญชาการ จัดคิว ประสานงาน ติดตามผล และตรวจรับงานส่วนกลาง</p><div class="project-signal" data-project-signal="jarvis_core" data-state="unknown" role="status" aria-live="polite"><i class="signal-dot"></i><span>กำลังตรวจสอบสถานะ</span></div></article>
     </div>
   </section>
 
@@ -306,6 +314,14 @@
   const PROJECT_STATUS_LABELS={connected:'เชื่อมต่อแล้ว',degraded:'ทำงานบางส่วน',unavailable:'ติดต่อไม่ได้',not_configured:'ยังไม่ได้ตั้งค่า',unknown:'ไม่ทราบสถานะ'};
   async function loadProjectStatuses(){
     const ids={jarvis_core:'project-jarvis',safe_elec:'project-safe',auto_iot_pro:'project-iot',auto_shop_pro:'project-shop',project_hub:'project-hub'};
+    const cardKeys=['jarvis_core','safe_elec','auto_iot_pro','auto_shop_pro'];
+    const paint=(key,state,label)=>{
+      const node=document.querySelector('[data-project-signal="'+key+'"]');
+      if(!node)return;
+      node.dataset.state=state;
+      const text=node.querySelector('span');
+      if(text)text.textContent=label;
+    };
     try{
       const r=await fetch('https://petchnikka-jarvis-core.onrender.com/api/integrations/project-hub/system-status',{headers:{Accept:'application/json'},cache:'no-store'});
       if(!r.ok)throw new Error('HTTP '+r.status);
@@ -313,18 +329,27 @@
       if(data.read_only!==true||!data.projects||!data.timestamp)throw new Error('invalid_status_payload');
       const allowed=new Set(Object.keys(ids));
       if(Object.keys(data.projects).length!==allowed.size||Object.keys(data.projects).some(k=>!allowed.has(k)))throw new Error('invalid_project_set');
-      let degraded=false;
-      for(const [key,id] of Object.entries(ids)){
-        const status=data.projects[key]?.status||'unknown';
-        el(id).textContent=PROJECT_STATUS_LABELS[status]||PROJECT_STATUS_LABELS.unknown;
-        if(status!=='connected')degraded=true;
-      }
       const checked=new Date(data.timestamp);
       if(Number.isNaN(checked.getTime()))throw new Error('invalid_timestamp');
       const stale=Date.now()-checked.getTime()>2*60*1000;
-      setState('project-health-state','project-health-label',stale?'degraded':degraded?'degraded':'connected',stale?'ข้อมูลอาจล้าสมัย':degraded?'มีโครงการที่ยังเชื่อมต่อไม่สมบูรณ์':'ทุกโครงการตอบสถานะเชื่อมต่อ');
+      let degraded=false;
+      for(const key of cardKeys){
+        const status=stale?'unknown':(data.projects[key]?.status||'unknown');
+        const state=status==='repairing'?'yellow':status==='connected'?'green':'red';
+        const label=status==='repairing'?'AI กำลังแก้ไข':status==='connected'?'เชื่อมต่อแล้ว':'ระบบมีปัญหา / ยืนยันไม่ได้';
+        paint(key,state,label);
+        const metricId=ids[key];
+        if(metricId)el(metricId).textContent=PROJECT_STATUS_LABELS[status]||PROJECT_STATUS_LABELS.unknown;
+        if(state!=='green')degraded=true;
+      }
+      const hubStatus=stale?'unknown':(data.projects.project_hub?.status||'unknown');
+      const hubState=hubStatus==='repairing'?'yellow':hubStatus==='connected'?'green':'red';
+      paint('project_hub',hubState,hubStatus==='repairing'?'AI กำลังแก้ไข':hubStatus==='connected'?'เชื่อมต่อแล้ว':'ระบบมีปัญหา / ยืนยันไม่ได้');
+      const hubMetric=ids.project_hub;if(hubMetric)el(hubMetric).textContent=PROJECT_STATUS_LABELS[hubStatus]||PROJECT_STATUS_LABELS.unknown;
+      setState('project-health-state','project-health-label',stale?'degraded':degraded||hubState!=='green'?'degraded':'connected',stale?'ข้อมูลอาจล้าสมัย':degraded||hubState!=='green'?'มีโครงการที่ต้องตรวจสอบ':'ทุกโครงการตอบสถานะเชื่อมต่อ');
       el('project-health-updated').textContent='ตรวจล่าสุด: '+fmt(data.timestamp)+(stale?' · ข้อมูลเกิน 2 นาที':'');
     }catch{
+      for(const key of [...cardKeys,'project_hub'])paint(key,'red','ระบบมีปัญหา / ยืนยันไม่ได้');
       Object.values(ids).forEach(id=>el(id).textContent='ยืนยันไม่ได้');
       setState('project-health-state','project-health-label','unavailable','ยังยืนยันสถานะโครงการไม่ได้');
       el('project-health-updated').textContent='JARVIS CORE ไม่ตอบกลับหรือส่งข้อมูลไม่ถูกต้อง';
