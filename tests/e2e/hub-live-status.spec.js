@@ -45,8 +45,10 @@ async function mockHealthyApis(page, dept = departmentPayload(), uptime = uptime
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(uptime) }));
   await page.route(`${apiBase}/project-hub/department-status`, route =>
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(dept) }));
-  await page.route(`${apiBase}/project-hub/system-status`, route =>
-    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(projects) }));
+  if (projects !== null) {
+    await page.route(`${apiBase}/project-hub/system-status`, route =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(projects) }));
+  }
 }
 
 test('renders live-shaped UptimeRobot and all 17 department records', async ({ page }) => {
@@ -129,7 +131,6 @@ test('shows yellow signal when the status API explicitly reports an active repai
 
 test('shows red signals rather than stale green when the system-status API is unavailable', async ({ page }) => {
   await mockHealthyApis(page, departmentPayload(), uptimePayload(), null);
-  await page.unroute(apiBase + '/project-hub/system-status');
   await page.route(apiBase + '/project-hub/system-status', route => route.fulfill({ status: 503, body: 'unavailable' }));
   await page.goto('/');
   await expect(page.locator('[data-project-signal="jarvis_core"]')).toHaveAttribute('data-state', 'red');
