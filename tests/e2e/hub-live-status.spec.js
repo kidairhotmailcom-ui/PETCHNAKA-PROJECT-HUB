@@ -40,11 +40,13 @@ function uptimePayload(timestamp = new Date().toISOString()) {
   };
 }
 
-async function mockHealthyApis(page, dept = departmentPayload(), uptime = uptimePayload()) {
+async function mockHealthyApis(page, dept = departmentPayload(), uptime = uptimePayload(), projects = projectPayload()) {
   await page.route(`${apiBase}/uptimerobot/public-status`, route =>
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(uptime) }));
   await page.route(`${apiBase}/project-hub/department-status`, route =>
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(dept) }));
+  await page.route(`${apiBase}/project-hub/system-status`, route =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(projects) }));
 }
 
 test('renders live-shaped UptimeRobot and all 17 department records', async ({ page }) => {
@@ -107,11 +109,7 @@ function projectPayload(overrides = {}, timestamp = new Date().toISOString()) {
 }
 
 test('shows green project signals only for connected projects and red for unavailable projects', async ({ page }) => {
-  await mockHealthyApis(page);
-  await page.route(apiBase + '/project-hub/system-status', route => route.fulfill({
-    status: 200, contentType: 'application/json',
-    body: JSON.stringify(projectPayload({ safe_elec: { status: 'unavailable' } }))
-  }));
+  await mockHealthyApis(page, departmentPayload(), uptimePayload(), projectPayload({ safe_elec: { status: 'unavailable' } }));
   await page.goto('/');
   await expect(page.locator('[data-project-signal="auto_shop_pro"]')).toHaveAttribute('data-state', 'green');
   await expect(page.locator('[data-project-signal="auto_shop_pro"]')).toContainText('เชื่อมต่อแล้ว');
@@ -123,18 +121,15 @@ test('shows green project signals only for connected projects and red for unavai
 });
 
 test('shows yellow signal when the status API explicitly reports an active repair', async ({ page }) => {
-  await mockHealthyApis(page);
-  await page.route(apiBase + '/project-hub/system-status', route => route.fulfill({
-    status: 200, contentType: 'application/json',
-    body: JSON.stringify(projectPayload({ auto_iot_pro: { status: 'repairing' } }))
-  }));
+  await mockHealthyApis(page, departmentPayload(), uptimePayload(), projectPayload({ auto_iot_pro: { status: 'repairing' } }));
   await page.goto('/');
   await expect(page.locator('[data-project-signal="auto_iot_pro"]')).toHaveAttribute('data-state', 'yellow');
   await expect(page.locator('[data-project-signal="auto_iot_pro"]')).toContainText('AI กำลังแก้ไข');
 });
 
 test('shows red signals rather than stale green when the system-status API is unavailable', async ({ page }) => {
-  await mockHealthyApis(page);
+  await mockHealthyApis(page, departmentPayload(), uptimePayload(), null);
+  await page.unroute(apiBase + '/project-hub/system-status');
   await page.route(apiBase + '/project-hub/system-status', route => route.fulfill({ status: 503, body: 'unavailable' }));
   await page.goto('/');
   await expect(page.locator('[data-project-signal="jarvis_core"]')).toHaveAttribute('data-state', 'red');
