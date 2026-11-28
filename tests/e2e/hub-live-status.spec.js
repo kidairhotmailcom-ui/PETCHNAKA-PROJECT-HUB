@@ -87,3 +87,53 @@ test('marks old snapshots as degraded instead of presenting them as fresh', asyn
   await expect(page.locator('#dept-connection-label')).toHaveText('ข้อมูลอาจล้าสมัย');
   await expect(page.locator('#dept-updated')).toContainText('เกิน 5 นาที');
 });
+
+
+function projectPayload(overrides = {}, timestamp = new Date().toISOString()) {
+  const base = {
+    jarvis_core: { status: 'connected' },
+    safe_elec: { status: 'connected' },
+    auto_iot_pro: { status: 'connected' },
+    auto_shop_pro: { status: 'connected' },
+    project_hub: { status: 'connected' }
+  };
+  return {
+    service: 'PETCHNIKKA JARVIS CORE',
+    status: 'connected',
+    read_only: true,
+    timestamp,
+    projects: { ...base, ...overrides }
+  };
+}
+
+test('shows green project signals only for connected projects and red for unavailable projects', async ({ page }) => {
+  await mockHealthyApis(page);
+  await page.route(apiBase + '/project-hub/system-status', route => route.fulfill({
+    status: 200, contentType: 'application/json',
+    body: JSON.stringify(projectPayload({ safe_elec: { status: 'unavailable' } }))
+  }));
+  await page.goto('/');
+  await expect(page.locator('[data-project-signal="auto_shop_pro"]')).toHaveAttribute('data-state', 'green');
+  await expect(page.locator('[data-project-signal="auto_shop_pro"]')).toContainText('เชื่อมต่อแล้ว');
+  await expect(page.locator('[data-project-signal="safe_elec"]')).toHaveAttribute('data-state', 'red');
+  await expect(page.locator('[data-project-signal="safe_elec"]')).toContainText('ระบบมีปัญหา');
+});
+
+test('shows yellow signal when the status API explicitly reports an active repair', async ({ page }) => {
+  await mockHealthyApis(page);
+  await page.route(apiBase + '/project-hub/system-status', route => route.fulfill({
+    status: 200, contentType: 'application/json',
+    body: JSON.stringify(projectPayload({ auto_iot_pro: { status: 'repairing' } }))
+  }));
+  await page.goto('/');
+  await expect(page.locator('[data-project-signal="auto_iot_pro"]')).toHaveAttribute('data-state', 'yellow');
+  await expect(page.locator('[data-project-signal="auto_iot_pro"]')).toContainText('AI กำลังแก้ไข');
+});
+
+test('shows red signals rather than stale green when the system-status API is unavailable', async ({ page }) => {
+  await mockHealthyApis(page);
+  await page.route(apiBase + '/project-hub/system-status', route => route.fulfill({ status: 503, body: 'unavailable' }));
+  await page.goto('/');
+  await expect(page.locator('[data-project-signal="jarvis_core"]')).toHaveAttribute('data-state', 'red');
+  await expect(page.locator('[data-project-signal="safe_elec"]')).toHaveAttribute('data-state', 'red');
+});
