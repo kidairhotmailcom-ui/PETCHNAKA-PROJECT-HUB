@@ -113,10 +113,10 @@ function projectPayload(overrides = {}, timestamp = new Date().toISOString()) {
 test('shows green project signals only for connected projects and red for unavailable projects', async ({ page }) => {
   await mockHealthyApis(page, departmentPayload(), uptimePayload(), projectPayload({ safe_elec: { status: 'unavailable' } }));
   await page.goto('/');
-  await expect(page.locator('[data-project-signal="auto_shop_pro"]')).toHaveAttribute('data-state', 'green');
-  await expect(page.locator('[data-project-signal="auto_shop_pro"]')).toContainText('เชื่อมต่อแล้ว');
-  await expect(page.locator('[data-project-signal="safe_elec"]')).toHaveAttribute('data-state', 'red');
-  await expect(page.locator('[data-project-signal="safe_elec"]')).toContainText('ระบบมีปัญหา');
+  await expect(page.locator('.metrics [data-project-signal="auto_shop_pro"]')).toHaveAttribute('data-state', 'green');
+  await expect(page.locator('.metrics [data-project-signal="auto_shop_pro"]')).toContainText('เชื่อมต่อแล้ว');
+  await expect(page.locator('.metrics [data-project-signal="safe_elec"]')).toHaveAttribute('data-state', 'red');
+  await expect(page.locator('.metrics [data-project-signal="safe_elec"]')).toContainText('ระบบมีปัญหา');
   await expect(page.locator('.metrics [data-project-signal]')).toHaveCount(5);
   await expect(page.locator('.metrics [data-project-signal="safe_elec"]')).toHaveAttribute('data-state', 'red');
   await expect(page.locator('.metrics [data-project-signal="project_hub"]')).toHaveAttribute('data-state', 'green');
@@ -125,14 +125,14 @@ test('shows green project signals only for connected projects and red for unavai
 test('shows yellow signal when the status API explicitly reports an active repair', async ({ page }) => {
   await mockHealthyApis(page, departmentPayload(), uptimePayload(), projectPayload({ auto_iot_pro: { status: 'repairing' } }));
   await page.goto('/');
-  await expect(page.locator('[data-project-signal="auto_iot_pro"]')).toHaveAttribute('data-state', 'yellow');
-  await expect(page.locator('[data-project-signal="auto_iot_pro"]')).toContainText('AI กำลังแก้ไข');
+  await expect(page.locator('.metrics [data-project-signal="auto_iot_pro"]')).toHaveAttribute('data-state', 'yellow');
+  await expect(page.locator('.metrics [data-project-signal="auto_iot_pro"]')).toContainText('AI กำลังแก้ไข');
 });
 
 test('shows red signals rather than stale green when the system-status API is unavailable', async ({ page }) => {
   await mockHealthyApis(page, departmentPayload(), uptimePayload(), null);
   await page.route(apiBase + '/project-hub/system-status', route => route.fulfill({ status: 503, body: 'unavailable' }));
   await page.goto('/');
-  await expect(page.locator('[data-project-signal="jarvis_core"]')).toHaveAttribute('data-state', 'red');
-  await expect(page.locator('[data-project-signal="safe_elec"]')).toHaveAttribute('data-state', 'red');
+  await expect(page.locator('.metrics [data-project-signal="jarvis_core"]')).toHaveAttribute('data-state', 'red');
+  await expect(page.locator('.metrics [data-project-signal="safe_elec"]')).toHaveAttribute('data-state', 'red');
 });
