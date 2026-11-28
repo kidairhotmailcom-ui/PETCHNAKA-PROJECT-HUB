@@ -311,7 +311,7 @@
     }).join(''):'<div class="empty-state">ไม่พบฝ่ายที่ตรงกับเงื่อนไข</div>';
   }
   function setState(id,labelId,state,label){el(id).dataset.state=state;el(labelId).textContent=label;}
-  const PROJECT_STATUS_LABELS={connected:'เชื่อมต่อแล้ว',degraded:'ทำงานบางส่วน',unavailable:'ติดต่อไม่ได้',not_configured:'ยังไม่ได้ตั้งค่า',unknown:'ไม่ทราบสถานะ'};
+  const PROJECT_STATUS_LABELS={connected:'เชื่อมต่อแล้ว',repairing:'AI กำลังแก้ไข',degraded:'ทำงานบางส่วน',unavailable:'ติดต่อไม่ได้',not_configured:'ยังไม่ได้ตั้งค่า',unknown:'ไม่ทราบสถานะ'};
   async function loadProjectStatuses(){
     const ids={jarvis_core:'project-jarvis',safe_elec:'project-safe',auto_iot_pro:'project-iot',auto_shop_pro:'project-shop',project_hub:'project-hub'};
     const cardKeys=['jarvis_core','safe_elec','auto_iot_pro','auto_shop_pro'];
