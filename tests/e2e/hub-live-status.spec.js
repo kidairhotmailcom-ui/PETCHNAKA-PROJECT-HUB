@@ -117,6 +117,9 @@ test('shows green project signals only for connected projects and red for unavai
   await expect(page.locator('[data-project-signal="auto_shop_pro"]')).toContainText('เชื่อมต่อแล้ว');
   await expect(page.locator('[data-project-signal="safe_elec"]')).toHaveAttribute('data-state', 'red');
   await expect(page.locator('[data-project-signal="safe_elec"]')).toContainText('ระบบมีปัญหา');
+  await expect(page.locator('.metrics [data-project-signal]')).toHaveCount(5);
+  await expect(page.locator('.metrics [data-project-signal="safe_elec"]')).toHaveAttribute('data-state', 'red');
+  await expect(page.locator('.metrics [data-project-signal="project_hub"]')).toHaveAttribute('data-state', 'green');
 });
 
 test('shows yellow signal when the status API explicitly reports an active repair', async ({ page }) => {
